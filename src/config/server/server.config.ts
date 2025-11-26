@@ -1,3 +1,3 @@
-export interface ServerConfig {
+export type ServerConfig = {
   port: number;
-}
+};
