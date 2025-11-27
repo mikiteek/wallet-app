@@ -44,6 +44,21 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+# Migrations
+More info about migrations using TypeOrm see here https://typeorm.io/migrations#
+### create migrations
+```
+$ npx typeorm-ts-node-commonjs migration:create src/database/migrations/{the_name_of_the_migration}
+```
+### run migrations
+```
+$ npm run migrations:run
+```
+### down last migrations
+```
+$ npm run migrations:down
+```
+
 ## Run tests
 
 ```bash
