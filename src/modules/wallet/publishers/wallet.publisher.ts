@@ -6,13 +6,15 @@ import {
   RabbitMQMessage,
   RabbitMQMessageBuilder,
   WalletCreatedMessage,
-  WalletDepositMessage,
+  FundsDepositedWalletMessage,
+  FundsWithdrawnWalletMessage,
 } from '../../../rabbitmq/messages';
 
 const EXCHANGE = 'wallet_events';
 enum RoutingKeys {
   WALLET_CREATED = 'wallet.created',
   WALLET_DEPOSIT = 'wallet.deposit',
+  WALLET_WITHDRAW = 'wallet.withdraw',
 }
 
 @Injectable()
@@ -33,15 +35,29 @@ export class WalletPublisher {
     await this.publishMessage(RoutingKeys.WALLET_CREATED, builder.getMessage());
   }
 
-  async publishWalledDepositMessage(
-    message: WalletDepositMessage,
+  async publishFundsDepositedMessage(
+    message: FundsDepositedWalletMessage,
   ): Promise<void> {
     const builder = RabbitMQMessageBuilder.create(
-      MessageType.WALLEt_DEPOSIT,
+      MessageType.FUNDS_DEPOSITED,
       message,
     );
 
     await this.publishMessage(RoutingKeys.WALLET_DEPOSIT, builder.getMessage());
+  }
+
+  async publishFundsWithdrawnMessage(
+    message: FundsWithdrawnWalletMessage,
+  ): Promise<void> {
+    const builder = RabbitMQMessageBuilder.create(
+      MessageType.FUNDS_WITHDRAWN,
+      message,
+    );
+
+    await this.publishMessage(
+      RoutingKeys.WALLET_WITHDRAW,
+      builder.getMessage(),
+    );
   }
 
   private async publishMessage<T>(

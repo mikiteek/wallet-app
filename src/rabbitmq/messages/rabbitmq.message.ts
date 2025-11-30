@@ -1,6 +1,7 @@
 export enum MessageType {
   WALLET_CREATED = 'WALLET_CREATED',
-  WALLEt_DEPOSIT = 'WALLET_DEPOSIT',
+  FUNDS_DEPOSITED = 'FUNDS_DEPOSITED',
+  FUNDS_WITHDRAWN = 'FUNDS_WITHDRAWN',
 }
 
 export type RabbitMQMessage<T> = {

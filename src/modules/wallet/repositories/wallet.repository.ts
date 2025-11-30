@@ -3,7 +3,11 @@ import { InjectDataSource, InjectEntityManager } from '@nestjs/typeorm';
 import { DataSource, EntityManager } from 'typeorm';
 import { PinoLogger } from 'nestjs-pino';
 import { WalletEntity } from '../entities';
-import { WalletAlreadyExistsError, WalletNotFoundError } from '../errors';
+import {
+  WalletAlreadyExistsError,
+  WalletNotFoundError,
+  InsufficientFundsError,
+} from '../errors';
 import { WalletOperationEntity, EntryType } from '../../ledger/entities';
 import { TransactionRepository } from '../../transaction/repositories';
 import { PostgresErrCodes } from '../../../common/constants';
@@ -83,10 +87,14 @@ export class WalletRepository {
         balanceBefore: balanceBefore,
         balanceAfter: balanceAfter,
       });
-      await entityManager.save(WalletOperationEntity, walletOperation);
+      await entityManager.insert(WalletOperationEntity, walletOperation);
 
-      wallet.balance = balanceAfter;
-      await entityManager.save(WalletEntity, wallet);
+      await entityManager.increment(
+        WalletEntity,
+        { id: walletId },
+        'balance',
+        amount,
+      );
       await this.transactionRepository.updateToCommitted(
         transactionId,
         entityManager,
@@ -114,6 +122,80 @@ export class WalletRepository {
       throw error;
     } finally {
       await queryRunner.release();
+    }
+  }
+
+  async withdraw(
+    walletId: string,
+    amount: number,
+    transactionId: string,
+  ): Promise<boolean> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    const entityManager = queryRunner.manager;
+    await queryRunner.connect();
+
+    await queryRunner.startTransaction();
+    try {
+      const wallet = await entityManager.findOne(WalletEntity, {
+        where: { id: walletId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!wallet) {
+        throw new WalletNotFoundError(
+          `Error on fetching wallet for withdrawal walletId=${walletId}`,
+        );
+      }
+
+      const balanceBefore = wallet.balance;
+      const balanceAfter = balanceBefore - amount;
+
+      if (balanceAfter < 0) {
+        throw new InsufficientFundsError(
+          `Insufficient funds for withdrawal walletId=${walletId}, balance=${balanceBefore}, withdrawalAmount=${amount}`,
+        );
+      }
+
+      const walletOperation = entityManager.create(WalletOperationEntity, {
+        walletId,
+        transactionId,
+        entryType: EntryType.DEBIT,
+        amount: -amount,
+        balanceBefore: balanceBefore,
+        balanceAfter: balanceAfter,
+      });
+      await entityManager.insert(WalletOperationEntity, walletOperation);
+
+      await entityManager.decrement(
+        WalletEntity,
+        { id: walletId },
+        'balance',
+        amount,
+      );
+      await this.transactionRepository.updateToCommitted(
+        transactionId,
+        entityManager,
+      );
+
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      await this.transactionRepository.updateToFailed(
+        transactionId,
+        errorMessage,
+      );
+
+      this.logger.error('Error withdrawing from wallet', {
+        error: error as unknown,
+        transactionId,
+        walletId,
+        amount,
+      });
+      throw error;
     }
   }
 }
