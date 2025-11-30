@@ -86,6 +86,7 @@ export class TransactionRepository {
       { id: transactionId },
       {
         state: TransactionState.COMMITTED,
+        transactedAt: new Date(),
       },
     );
 
