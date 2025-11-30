@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import 'reflect-metadata';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from 'nestjs-pino';
@@ -10,6 +11,8 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   const logger = app.get(Logger);
+  app.useLogger(logger);
+
   const configService = app.get(ConfigService);
   const port = configService.get<number>('APP_PORT', 3000);
 
