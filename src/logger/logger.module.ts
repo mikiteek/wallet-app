@@ -28,5 +28,6 @@ import { LoggerConfig } from '../config/logger/logger.config';
       },
     }),
   ],
+  exports: [PinoLoggerModule],
 })
 export class LoggerModule {}
