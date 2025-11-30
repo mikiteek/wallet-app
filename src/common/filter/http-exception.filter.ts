@@ -20,11 +20,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<HttpRequest>();
     const status = exception.getStatus();
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const messages: string[] | string = (exception as any)?.response?.message;
+
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
-      message: exception.message,
+      error: exception.message,
       path: request.url,
+      ...(messages && { messages }),
     });
   }
 }
