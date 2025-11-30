@@ -21,6 +21,7 @@ export class WalletService {
     walletId: string,
     dto: WalletDepositFormDto,
   ): Promise<WalletEntity> {
+    const { amount, transactionId } = dto;
     const fetchWalletQuery = new FetchWalletQuery(walletId);
     const wallet = await this.queryBus.execute<FetchWalletQuery, WalletEntity>(
       fetchWalletQuery,
@@ -33,8 +34,8 @@ export class WalletService {
       await this.events.publishWalletCreatedMessage({ walletId });
     }
     const transaction: Transaction = {
-      id: dto.transactionId,
-      amount: dto.amount,
+      id: transactionId,
+      amount,
       type: TransactionType.DEPOSIT,
       source: 'external',
       destination: walletId,
@@ -50,10 +51,15 @@ export class WalletService {
 
     const depositCommand = new DepositWalletCommand(
       walletId,
-      dto.amount,
-      dto.transactionId,
+      amount,
+      transactionId,
     );
     await this.commandBus.execute<DepositWalletCommand>(depositCommand);
+    await this.events.publishWalledDepositMessage({
+      walletId,
+      amount,
+      transaction,
+    });
 
     return await this.queryBus.execute<FetchWalletQuery, WalletEntity>(
       fetchWalletQuery,

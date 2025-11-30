@@ -3,10 +3,17 @@ import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { PinoLogger } from 'nestjs-pino';
 import {
   MessageType,
-  RabbitMQMessageBuilder,
   RabbitMQMessage,
+  RabbitMQMessageBuilder,
   WalletCreatedMessage,
+  WalletDepositMessage,
 } from '../../../rabbitmq/messages';
+
+const EXCHANGE = 'wallet_events';
+enum RoutingKeys {
+  WALLET_CREATED = 'wallet.created',
+  WALLET_DEPOSIT = 'wallet.deposit',
+}
 
 @Injectable()
 export class WalletPublisher {
@@ -15,31 +22,41 @@ export class WalletPublisher {
     private readonly logger: PinoLogger,
   ) {}
 
-  async publishWalletCreatedMessage(message: WalletCreatedMessage) {
-    const exchange = 'wallet_events';
-    const routingKey = 'wallet.created';
+  async publishWalletCreatedMessage(
+    message: WalletCreatedMessage,
+  ): Promise<void> {
     const builder = RabbitMQMessageBuilder.create(
       MessageType.WALLET_CREATED,
       message,
     );
 
-    await this.publishMessage(exchange, routingKey, builder.getMessage());
+    await this.publishMessage(RoutingKeys.WALLET_CREATED, builder.getMessage());
+  }
+
+  async publishWalledDepositMessage(
+    message: WalletDepositMessage,
+  ): Promise<void> {
+    const builder = RabbitMQMessageBuilder.create(
+      MessageType.WALLEt_DEPOSIT,
+      message,
+    );
+
+    await this.publishMessage(RoutingKeys.WALLET_DEPOSIT, builder.getMessage());
   }
 
   private async publishMessage<T>(
-    exchange: string,
     routingKey: string,
     message: RabbitMQMessage<T>,
-  ) {
+  ): Promise<void> {
     this.logger.debug(
       'Publishing RMQ message to exchange %s, with routing key %s: %o',
-      exchange,
+      EXCHANGE,
       routingKey,
       message,
     );
 
     try {
-      await this.amqp.publish('wallet_events', 'wallet.created', message);
+      await this.amqp.publish(EXCHANGE, routingKey, message);
       this.logger.info(
         'Successfully published wallet.created message %o:',
         message,
