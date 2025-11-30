@@ -1,11 +1,13 @@
-// import { Module } from '@nestjs/common';
-// import { TypeOrmModule } from '@nestjs/typeorm';
-// import { TransactionRepository } from './repositories';
-// import { TransactionEntity } from './entities';
-//
-// @Module({
-//   imports: [TypeOrmModule.forFeature([TransactionEntity])],
-//   providers: [TransactionRepository],
-//   exports: [TransactionRepository],
-// })
-// export class TransactionModule {}
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { CqrsModule } from '@nestjs/cqrs';
+import { TransactionRepository } from './repositories';
+import { TransactionEntity } from './entities';
+import { CreateTransactionHandler } from './handlers';
+
+@Module({
+  imports: [TypeOrmModule.forFeature([TransactionEntity]), CqrsModule],
+  providers: [TransactionRepository, CreateTransactionHandler],
+  exports: [TransactionRepository, CreateTransactionHandler],
+})
+export class TransactionModule {}

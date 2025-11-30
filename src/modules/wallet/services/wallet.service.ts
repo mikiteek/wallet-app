@@ -2,9 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { WalletDepositFormDto } from '../dto';
 import { FetchWalletQuery } from '../queries';
-import { DepositWalletCommand } from '../commands';
-import { CreateWalletCommand } from '../commands';
+import { DepositWalletCommand, CreateWalletCommand } from '../commands';
 import { WalletEntity } from '../entities';
+import { WalletPublisher } from '../publishers/wallet.publisher';
+import { CreateTransactionCommand } from '../../transaction/commands';
 import { TransactionState, TransactionType } from '../../transaction/entities';
 import type { Transaction } from '../../transaction/types';
 
@@ -13,6 +14,7 @@ export class WalletService {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
+    private readonly events: WalletPublisher,
   ) {}
 
   async depositWallet(
@@ -28,6 +30,7 @@ export class WalletService {
       await this.commandBus.execute<CreateWalletCommand, void>(
         createWalletCommand,
       );
+      await this.events.publishWalletCreatedMessage({ walletId });
     }
     const transaction: Transaction = {
       id: dto.transactionId,
@@ -40,7 +43,16 @@ export class WalletService {
       transactedAt: null,
       errorMessage: null,
     };
-    const depositCommand = new DepositWalletCommand(walletId, transaction);
+    const createTransactionCommand = new CreateTransactionCommand(transaction);
+    await this.commandBus.execute<CreateTransactionCommand>(
+      createTransactionCommand,
+    );
+
+    const depositCommand = new DepositWalletCommand(
+      walletId,
+      dto.amount,
+      dto.transactionId,
+    );
     await this.commandBus.execute<DepositWalletCommand>(depositCommand);
 
     return await this.queryBus.execute<FetchWalletQuery, WalletEntity>(

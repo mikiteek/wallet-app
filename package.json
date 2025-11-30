@@ -22,6 +22,7 @@
     "migrations:down": "npx typeorm-ts-node-commonjs migration:revert -d src/database/typeorm.cli.ts"
   },
   "dependencies": {
+    "@golevelup/nestjs-rabbitmq": "^6.1.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",

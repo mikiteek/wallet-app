@@ -9,6 +9,7 @@ export class DepositWalletHandler
   constructor(private readonly walletRepository: WalletRepository) {}
 
   async execute(command: DepositWalletCommand): Promise<void> {
-    await this.walletRepository.deposit(command.walletId, command.transaction);
+    const { walletId, amount, transactionId } = command;
+    await this.walletRepository.deposit(walletId, amount, transactionId);
   }
 }

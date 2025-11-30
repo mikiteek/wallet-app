@@ -10,29 +10,28 @@ import {
   DepositWalletHandler,
   FetchWalletHandler,
 } from './handlers';
+import { WalletPublisher } from './publishers/wallet.publisher';
 import { WalletController } from './controllers';
 import { WalletOperationEntity } from '../ledger/entities';
-import { TransactionRepository } from '../transaction/repositories';
-import { TransactionEntity } from '../transaction/entities';
+import { TransactionModule } from '../transaction/transaction.module';
+import { RabbitMQModule } from '../../rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [
     CqrsModule,
     ConfigModule,
-    TypeOrmModule.forFeature([
-      WalletEntity,
-      WalletOperationEntity,
-      TransactionEntity,
-    ]),
+    RabbitMQModule,
+    TypeOrmModule.forFeature([WalletEntity, WalletOperationEntity]),
+    TransactionModule,
   ],
   controllers: [WalletController],
   providers: [
-    TransactionRepository,
     WalletRepository,
     WalletService,
     CreateWalletHandler,
     DepositWalletHandler,
     FetchWalletHandler,
+    WalletPublisher,
   ],
   exports: [],
 })
