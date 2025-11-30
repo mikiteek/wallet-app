@@ -6,7 +6,6 @@ import { WalletEntity } from '../entities';
 import { WalletAlreadyExistsError, WalletNotFoundError } from '../errors';
 import { WalletOperationEntity, EntryType } from '../../ledger/entities';
 import { TransactionRepository } from '../../transaction/repositories';
-import type { Transaction } from '../../transaction/types';
 import { PostgresErrCodes } from '../../../common/constants';
 
 @Injectable()
@@ -51,9 +50,11 @@ export class WalletRepository {
     }
   }
 
-  async deposit(walletId: string, transaction: Transaction): Promise<boolean> {
-    await this.transactionRepository.create(transaction);
-
+  async deposit(
+    walletId: string,
+    amount: number,
+    transactionId: string,
+  ): Promise<boolean> {
     const queryRunner = this.dataSource.createQueryRunner();
     const entityManager = queryRunner.manager;
     await queryRunner.connect();
@@ -73,12 +74,12 @@ export class WalletRepository {
       }
 
       const balanceBefore = wallet.balance;
-      const balanceAfter = balanceBefore + transaction.amount;
+      const balanceAfter = balanceBefore + amount;
       const walletOperation = entityManager.create(WalletOperationEntity, {
-        walletId: wallet.id,
-        transactionId: transaction.id,
+        walletId,
+        transactionId,
         entryType: EntryType.CREDIT,
-        amount: transaction.amount,
+        amount,
         balanceBefore: balanceBefore,
         balanceAfter: balanceAfter,
       });
@@ -87,7 +88,7 @@ export class WalletRepository {
       wallet.balance = balanceAfter;
       await entityManager.save(WalletEntity, wallet);
       await this.transactionRepository.updateToCommitted(
-        transaction.id,
+        transactionId,
         entityManager,
       );
 
@@ -100,14 +101,15 @@ export class WalletRepository {
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error';
       await this.transactionRepository.updateToFailed(
-        transaction.id,
+        transactionId,
         errorMessage,
       );
 
       this.logger.error('Error depositing to wallet', {
         error: error as unknown,
-        transaction,
+        transactionId,
         walletId,
+        amount,
       });
       throw error;
     } finally {
