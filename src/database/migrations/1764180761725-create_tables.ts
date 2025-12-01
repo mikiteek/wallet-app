@@ -42,7 +42,7 @@ export class CreateTables1764180761725 implements MigrationInterface {
       COMMENT ON COLUMN wallets.transactions.destination IS 'Transaction destination. wallet_id of receiver for transfers, deposits and "external" for withdrawals.';
       COMMENT ON COLUMN wallets.transactions.state IS 'Transaction state.';
       COMMENT ON COLUMN wallets.transactions.description IS 'Transaction description.';
-      COMMENT ON COLUMN wallets.transactions.transacted_at IS 'Timestamp when the transaction was finilized (committed, cancelled etc).';
+      COMMENT ON COLUMN wallets.transactions.transacted_at IS 'Timestamp when the transaction was finalized (committed, cancelled etc).';
       COMMENT ON COLUMN wallets.transactions.error_message IS 'Error message for failed transaction.';
       COMMENT ON COLUMN wallets.transactions.created_at IS 'Timestamp when the row was created.';
       COMMENT ON COLUMN wallets.transactions.updated_at IS 'Timestamp when the row was updated.';
@@ -61,7 +61,7 @@ export class CreateTables1764180761725 implements MigrationInterface {
           created_at timestamptz default now()
       );
       
-      COMMENT ON TABLE wallets.wallet_operations IS 'Contains commited successful wallet transaction';
+      COMMENT ON TABLE wallets.wallet_operations IS 'Contains commited successful wallet operations linked to transactions';
       COMMENT ON COLUMN wallets.wallet_operations.id IS 'Internal identifier for binding to other tables.';
       COMMENT ON COLUMN wallets.wallet_operations.wallet_id IS 'Wallet identifier, foreign key.';
       COMMENT ON COLUMN wallets.wallet_operations.transaction_id IS 'Transaction identifier, foreign key.';
