@@ -10,6 +10,7 @@ import {
   DepositWalletHandler,
   FetchWalletHandler,
   WithdrawWalletHandler,
+  TransferWalletHandler,
 } from './handlers';
 import { WalletPublisher } from './publishers/wallet.publisher';
 import { WalletController } from './controllers';
@@ -33,6 +34,7 @@ import { RabbitMQModule } from '../../rabbitmq/rabbitmq.module';
     DepositWalletHandler,
     FetchWalletHandler,
     WithdrawWalletHandler,
+    TransferWalletHandler,
     WalletPublisher,
   ],
   exports: [],
