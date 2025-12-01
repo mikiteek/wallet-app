@@ -17,7 +17,7 @@ export class NotificationConsumer {
     queue: 'wallet-events-queue',
   })
   handleWalletEvent<T>(message: RabbitMQMessage<T>) {
-    this.logger.info('Handling message notification o%', message);
+    this.logger.info('Handling message notification %o:', message);
 
     const email = `Notification for event type: ${message.type}`;
     this.notificationService.sendEmail(email);

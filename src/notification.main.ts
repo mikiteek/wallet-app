@@ -9,4 +9,9 @@ async function bootstrap() {
 
   // no need to expose port
 }
-bootstrap();
+bootstrap()
+  .then(() => console.log('Notification-service started successfully.'))
+  .catch((err) => {
+    console.log('Notification-service up failed, exiting process', err);
+    process.exit(1);
+  });

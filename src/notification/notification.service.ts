@@ -5,7 +5,7 @@ import { PinoLogger } from 'nestjs-pino';
 export class NotificationService {
   constructor(private readonly logger: PinoLogger) {}
 
-  sendEmail(email: string): void {
-    this.logger.info(`Sending email notification ${email}`);
+  sendEmail(emailMessage: string): void {
+    this.logger.info(`Sending email notification ${emailMessage}`);
   }
 }
