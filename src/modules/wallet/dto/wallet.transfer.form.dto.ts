@@ -21,7 +21,7 @@ export class WalletTransferFormDto {
   toWalletId: string;
 
   @ApiProperty({
-    type: 'number',
+    type: 'integer',
     description: 'Amount to transfer in cents',
     minimum: 100,
     maximum: 100000000,

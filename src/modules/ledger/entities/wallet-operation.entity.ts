@@ -19,7 +19,7 @@ export class WalletOperationEntity {
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
   })
-  id: number;
+  id: string;
 
   @Column({
     name: 'wallet_id',
@@ -53,6 +53,10 @@ export class WalletOperationEntity {
   @Column({
     type: 'bigint',
     nullable: false,
+    transformer: {
+      to: (value: number): string => value.toString(),
+      from: (value: string): number => parseInt(value, 10),
+    },
   })
   amount: number;
 
@@ -60,6 +64,10 @@ export class WalletOperationEntity {
     name: 'balance_before',
     type: 'bigint',
     nullable: false,
+    transformer: {
+      to: (value: number): string => value.toString(),
+      from: (value: string): number => parseInt(value, 10),
+    },
   })
   balanceBefore: number;
 
@@ -67,6 +75,10 @@ export class WalletOperationEntity {
     name: 'balance_after',
     type: 'bigint',
     nullable: false,
+    transformer: {
+      to: (value: number): string => value.toString(),
+      from: (value: string): number => parseInt(value, 10),
+    },
   })
   balanceAfter: number;
 

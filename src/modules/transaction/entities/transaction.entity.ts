@@ -28,6 +28,10 @@ export class TransactionEntity {
   @Column({
     type: 'bigint',
     nullable: false,
+    transformer: {
+      to: (value: number): string => value.toString(),
+      from: (value: string): number => parseInt(value, 10),
+    },
   })
   amount: number;
 

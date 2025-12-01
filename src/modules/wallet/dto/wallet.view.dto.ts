@@ -10,7 +10,7 @@ export class WalletViewDto {
   id: string;
 
   @ApiProperty({
-    type: 'number',
+    type: 'integer',
     minimum: 0,
   })
   @Expose()
