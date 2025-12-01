@@ -16,6 +16,10 @@ export class WalletEntity {
   @Column({
     nullable: false,
     type: 'bigint',
+    transformer: {
+      to: (value: number): string => value.toString(),
+      from: (value: string): number => parseInt(value, 10),
+    },
   })
   balance: number;
 

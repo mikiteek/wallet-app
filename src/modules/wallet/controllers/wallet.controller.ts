@@ -21,6 +21,7 @@ import {
   WalletWithdrawFormDto,
   WalletTransferFormDto,
 } from '../dto';
+import { WalletOperationsListViewDto } from '../../ledger/dto';
 import {
   ApiBadRequestResponse,
   ApiConflictResponse,
@@ -132,6 +133,30 @@ export class WalletController {
         throw new BadRequestException(error.message);
       }
 
+      if (error instanceof WalletNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+
+      throw error;
+    }
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe())
+  @ApiOkResponse({ type: WalletOperationsListViewDto })
+  @ApiNotFoundResponse({ description: 'Wallet not found' })
+  @Get('/:id/history')
+  async fetchOperations(
+    @Param('id', ParseUUIDPipe) walletId: string,
+  ): Promise<WalletOperationsListViewDto> {
+    try {
+      const operationsList =
+        await this.walletService.fetchWalletOperationsList(walletId);
+
+      return plainToInstance(WalletOperationsListViewDto, operationsList, {
+        excludeExtraneousValues: true,
+      });
+    } catch (error) {
       if (error instanceof WalletNotFoundError) {
         throw new NotFoundException(error.message);
       }

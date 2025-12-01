@@ -16,6 +16,7 @@ import { WalletPublisher } from './publishers/wallet.publisher';
 import { WalletController } from './controllers';
 import { WalletOperationEntity } from '../ledger/entities';
 import { TransactionModule } from '../transaction/transaction.module';
+import { WalletOperationModule } from '../ledger/wallet-operation.module';
 import { RabbitMQModule } from '../../rabbitmq/rabbitmq.module';
 
 @Module({
@@ -25,6 +26,7 @@ import { RabbitMQModule } from '../../rabbitmq/rabbitmq.module';
     RabbitMQModule,
     TypeOrmModule.forFeature([WalletEntity, WalletOperationEntity]),
     TransactionModule,
+    WalletOperationModule,
   ],
   controllers: [WalletController],
   providers: [

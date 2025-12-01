@@ -12,7 +12,7 @@ export class WalletDepositFormDto {
   transactionId: string;
 
   @ApiProperty({
-    type: 'number',
+    type: 'integer',
     description: 'Amount to deposit in cents',
     example: 5000,
     minimum: 100,

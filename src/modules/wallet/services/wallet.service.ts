@@ -18,7 +18,9 @@ import { WalletPublisher } from '../publishers/wallet.publisher';
 import { CreateTransactionCommand } from '../../transaction/commands';
 import { TransactionState, TransactionType } from '../../transaction/entities';
 import type { Transaction } from '../../transaction/types';
+import { FetchWalletOperationsQuery } from '../../ledger/queries';
 import { WalletNotFoundError, TransferValidationError } from '../errors';
+import { WalletOperationEntity } from '../../ledger/entities';
 
 @Injectable()
 export class WalletService {
@@ -43,6 +45,21 @@ export class WalletService {
     }
 
     return wallet;
+  }
+
+  async fetchWalletOperationsList(
+    walletId: string,
+  ): Promise<{ items: WalletOperationEntity[] }> {
+    // validate wallet existence first
+    await this.fetchWallet(walletId);
+
+    const query = new FetchWalletOperationsQuery(walletId);
+    const items = await this.queryBus.execute<
+      FetchWalletOperationsQuery,
+      WalletOperationEntity[]
+    >(query);
+
+    return { items };
   }
 
   async depositFunds(
