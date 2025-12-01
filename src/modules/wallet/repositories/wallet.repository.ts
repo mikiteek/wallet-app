@@ -41,7 +41,7 @@ export class WalletRepository {
 
     if (!wallet) {
       throw new WalletNotFoundError(
-        `Error on fetching wallet for deposit walletId=${walletId}`,
+        `Error on fetching wallet with pessimistic_write lock walletId=${walletId}`,
       );
     }
 
