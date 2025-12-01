@@ -15,7 +15,6 @@ export enum TransactionType {
 export enum TransactionState {
   PENDING = 'pending',
   COMMITTED = 'committed',
-  // CANCELLED = 'cancelled', potentially can be used to cancel pending transactions
   FAILED = 'failed',
 }
 
@@ -88,7 +87,6 @@ export class TransactionEntity {
     name: 'updated_at',
     type: 'timestamptz',
     nullable: false,
-    default: Date.now(),
   })
   updatedAt: Date;
 }

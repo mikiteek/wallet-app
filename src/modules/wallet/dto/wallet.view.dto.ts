@@ -7,11 +7,11 @@ export class WalletViewDto {
     format: 'uuid',
   })
   @Expose()
-  id: number;
+  id: string;
 
   @ApiProperty({
     type: 'number',
-    minimum: 100,
+    minimum: 0,
   })
   @Expose()
   balance: number;

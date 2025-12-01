@@ -21,8 +21,8 @@ import {
 } from '../dto';
 import {
   ApiConflictResponse,
-  ApiCreatedResponse,
   ApiNotFoundResponse,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import {
   WalletAlreadyExistsError,
@@ -37,7 +37,7 @@ export class WalletController {
 
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
-  @ApiCreatedResponse({ type: WalletViewDto })
+  @ApiOkResponse({ type: WalletViewDto })
   @ApiConflictResponse({ description: 'Wallet or Transaction already exists' })
   @Post('/:id/deposit')
   async deposit(
@@ -65,7 +65,7 @@ export class WalletController {
 
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
-  @ApiCreatedResponse({ type: WalletViewDto })
+  @ApiOkResponse({ type: WalletViewDto })
   @ApiConflictResponse({ description: 'Transaction already exists' })
   @Post('/:id/withdraw')
   async withdraw(
@@ -96,6 +96,7 @@ export class WalletController {
 
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
+  @ApiOkResponse({ type: WalletViewDto })
   @ApiNotFoundResponse({ description: 'Wallet not found' })
   @Get('/:id')
   async fetch(

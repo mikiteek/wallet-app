@@ -30,10 +30,27 @@ export class WalletRepository {
     return this.entityManager.findOneBy(WalletEntity, { id: walletId });
   }
 
+  private async fetchWalletWithLockOrThrow(
+    walletId: string,
+    entityManager: EntityManager,
+  ): Promise<WalletEntity> {
+    const wallet = await entityManager.findOne(WalletEntity, {
+      where: { id: walletId },
+      lock: { mode: 'pessimistic_write' },
+    });
+
+    if (!wallet) {
+      throw new WalletNotFoundError(
+        `Error on fetching wallet for deposit walletId=${walletId}`,
+      );
+    }
+
+    return wallet;
+  }
+
   async create(walletId: string): Promise<boolean> {
-    let wallet: WalletEntity | null = null;
     try {
-      wallet = this.entityManager.create(WalletEntity, {
+      const wallet = this.entityManager.create(WalletEntity, {
         id: walletId,
         balance: 0,
       });
@@ -66,16 +83,10 @@ export class WalletRepository {
     await queryRunner.startTransaction();
     try {
       // At this moment the wallet has to be created
-      const wallet = await entityManager.findOne(WalletEntity, {
-        where: { id: walletId },
-        lock: { mode: 'pessimistic_write' },
-      });
-
-      if (!wallet) {
-        throw new WalletNotFoundError(
-          `Error on fetching wallet for deposit walletId=${walletId}`,
-        );
-      }
+      const wallet = await this.fetchWalletWithLockOrThrow(
+        walletId,
+        entityManager,
+      );
 
       const balanceBefore = wallet.balance;
       const balanceAfter = balanceBefore + amount;
@@ -136,16 +147,11 @@ export class WalletRepository {
 
     await queryRunner.startTransaction();
     try {
-      const wallet = await entityManager.findOne(WalletEntity, {
-        where: { id: walletId },
-        lock: { mode: 'pessimistic_write' },
-      });
-
-      if (!wallet) {
-        throw new WalletNotFoundError(
-          `Error on fetching wallet for withdrawal walletId=${walletId}`,
-        );
-      }
+      // At this moment the wallet has to be created
+      const wallet = await this.fetchWalletWithLockOrThrow(
+        walletId,
+        entityManager,
+      );
 
       const balanceBefore = wallet.balance;
       const balanceAfter = balanceBefore - amount;

@@ -15,6 +15,7 @@ export class WalletEntity {
 
   @Column({
     nullable: false,
+    type: 'bigint',
   })
   balance: number;
 
@@ -29,7 +30,6 @@ export class WalletEntity {
     name: 'updated_at',
     type: 'timestamptz',
     nullable: false,
-    default: Date.now(),
   })
   updatedAt: Date;
 }
