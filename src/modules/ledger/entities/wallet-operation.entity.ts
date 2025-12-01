@@ -19,7 +19,7 @@ export class WalletOperationEntity {
   @PrimaryGeneratedColumn('increment', {
     type: 'bigint',
   })
-  id: number;
+  id: string;
 
   @Column({
     name: 'wallet_id',

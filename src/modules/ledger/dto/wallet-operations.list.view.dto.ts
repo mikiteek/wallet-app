@@ -61,10 +61,7 @@ class WalletOperation {
 
 export class WalletOperationsListViewDto {
   @ApiProperty({
-    type: 'array',
-    items: {
-      $ref: '#/components/schemas/WalletOperation',
-    },
+    type: [WalletOperation],
   })
   @Expose()
   @Type(() => WalletOperation)
