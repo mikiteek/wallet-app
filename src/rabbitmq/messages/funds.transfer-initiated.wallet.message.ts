@@ -1,4 +1,4 @@
-export type FundTransferInitiatedWalletMessage = {
+export type FundsTransferInitiatedWalletMessage = {
   fromWalletId: string;
   toWalletId: string;
   amount: number;

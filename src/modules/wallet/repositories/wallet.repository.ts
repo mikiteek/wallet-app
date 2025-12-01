@@ -218,14 +218,23 @@ export class WalletRepository {
 
     await queryRunner.startTransaction();
     try {
-      const sourceWallet = await this.fetchWalletWithLockOrThrow(
+      const [firstWalletId, secondWalletId] = [
         sourceWalletId,
-        entityManager,
-      );
-      const destinationWallet = await this.fetchWalletWithLockOrThrow(
         destinationWalletId,
+      ].toSorted();
+
+      const firstWallet = await this.fetchWalletWithLockOrThrow(
+        firstWalletId,
         entityManager,
       );
+      const secondWallet = await this.fetchWalletWithLockOrThrow(
+        secondWalletId,
+        entityManager,
+      );
+      const sourceWallet =
+        sourceWalletId === firstWalletId ? firstWallet : secondWallet;
+      const destinationWallet =
+        destinationWalletId === firstWalletId ? firstWallet : secondWallet;
 
       const sourceBalanceBefore = sourceWallet.balance;
       const sourceBalanceAfter = sourceBalanceBefore - amount;
@@ -259,7 +268,7 @@ export class WalletRepository {
         walletId: destinationWalletId,
         transactionId,
         entryType: EntryType.CREDIT,
-        amount: amount,
+        amount,
         balanceBefore: destinationBalanceBefore,
         balanceAfter: destinationBalanceAfter,
       });

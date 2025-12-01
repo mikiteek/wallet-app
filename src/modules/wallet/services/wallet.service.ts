@@ -18,7 +18,7 @@ import { WalletPublisher } from '../publishers/wallet.publisher';
 import { CreateTransactionCommand } from '../../transaction/commands';
 import { TransactionState, TransactionType } from '../../transaction/entities';
 import type { Transaction } from '../../transaction/types';
-import { InsufficientFundsError, WalletNotFoundError } from '../errors';
+import { WalletNotFoundError, TransferValidationError } from '../errors';
 
 @Injectable()
 export class WalletService {
@@ -100,12 +100,6 @@ export class WalletService {
     dto: WalletWithdrawFormDto,
   ): Promise<WalletEntity> {
     const { amount, transactionId } = dto;
-    const wallet = await this.fetchWallet(walletId);
-    if (wallet.balance < amount) {
-      const errorMessage = `Insufficient funds in wallet ID ${walletId} for withdrawal of amount ${amount}`;
-      this.logger.error(errorMessage);
-      throw new InsufficientFundsError(errorMessage);
-    }
 
     const transaction: Transaction = {
       id: transactionId,
@@ -143,11 +137,10 @@ export class WalletService {
     dto: WalletTransferFormDto,
   ): Promise<WalletEntity> {
     const { toWalletId, amount, transactionId } = dto;
-    const sourceWallet = await this.fetchWallet(sourceWalletId);
-    if (sourceWallet.balance < amount) {
-      const errorMessage = `Insufficient funds in wallet ID ${sourceWalletId} for transfer of amount ${amount}`;
-      this.logger.error(errorMessage);
-      throw new InsufficientFundsError(errorMessage);
+    if (sourceWalletId === toWalletId) {
+      const errorMessage = `Source and destination wallet IDs are the same: ${sourceWalletId}`;
+      this.logger.warn(errorMessage);
+      throw new TransferValidationError(errorMessage);
     }
 
     const transaction: Transaction = {

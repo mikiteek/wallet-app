@@ -1,3 +1,3 @@
-import { FundTransferInitiatedWalletMessage } from './funds.transfer-initiated.wallet.message';
+import { FundsTransferInitiatedWalletMessage } from './funds.transfer-initiated.wallet.message';
 
-export type FundsTransferredWalletMessage = FundTransferInitiatedWalletMessage;
+export type FundsTransferredWalletMessage = FundsTransferInitiatedWalletMessage;

@@ -10,6 +10,7 @@ import {
   HttpStatus,
   ConflictException,
   NotFoundException,
+  BadRequestException,
   Get,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
@@ -21,6 +22,7 @@ import {
   WalletTransferFormDto,
 } from '../dto';
 import {
+  ApiBadRequestResponse,
   ApiConflictResponse,
   ApiNotFoundResponse,
   ApiOkResponse,
@@ -29,6 +31,7 @@ import {
   WalletAlreadyExistsError,
   WalletNotFoundError,
   InsufficientFundsError,
+  TransferValidationError,
 } from '../errors';
 import { TransactionAlreadyExistsError } from '../../transaction/errors';
 
@@ -39,7 +42,8 @@ export class WalletController {
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
   @ApiOkResponse({ type: WalletViewDto })
-  @ApiConflictResponse({ description: 'Wallet or Transaction already exists' })
+  @ApiBadRequestResponse({ description: 'Bad request' })
+  @ApiConflictResponse({ description: 'Wallet or transaction already exists' })
   @Post('/:id/deposit')
   async deposit(
     @Param('id', ParseUUIDPipe) walletId: string,
@@ -67,7 +71,10 @@ export class WalletController {
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
   @ApiOkResponse({ type: WalletViewDto })
-  @ApiConflictResponse({ description: 'Transaction already exists' })
+  @ApiBadRequestResponse({ description: 'Bad request' })
+  @ApiConflictResponse({
+    description: 'Transaction already exists or insufficient funds',
+  })
   @Post('/:id/withdraw')
   async withdraw(
     @Param('id', ParseUUIDPipe) walletId: string,
@@ -98,30 +105,10 @@ export class WalletController {
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe())
   @ApiOkResponse({ type: WalletViewDto })
-  @ApiNotFoundResponse({ description: 'Wallet not found' })
-  @Get('/:id')
-  async fetch(
-    @Param('id', ParseUUIDPipe) walletId: string,
-  ): Promise<WalletViewDto> {
-    try {
-      const wallet = await this.walletService.fetchWallet(walletId);
-
-      return plainToInstance(WalletViewDto, wallet, {
-        excludeExtraneousValues: true,
-      });
-    } catch (error) {
-      if (error instanceof WalletNotFoundError) {
-        throw new NotFoundException(error.message);
-      }
-
-      throw error;
-    }
-  }
-
-  @HttpCode(HttpStatus.OK)
-  @UsePipes(new ValidationPipe())
-  @ApiOkResponse({ type: WalletViewDto })
-  @ApiConflictResponse({ description: 'Transaction already exists' })
+  @ApiConflictResponse({
+    description: 'Transaction already exists or insufficient funds',
+  })
+  @ApiBadRequestResponse({ description: 'Bad request' })
   @Post('/:id/transfer')
   async transfer(
     @Param('id', ParseUUIDPipe) sourceWalletId: string,
@@ -141,6 +128,33 @@ export class WalletController {
         throw new ConflictException(error.message);
       }
 
+      if (error instanceof TransferValidationError) {
+        throw new BadRequestException(error.message);
+      }
+
+      if (error instanceof WalletNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+
+      throw error;
+    }
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe())
+  @ApiOkResponse({ type: WalletViewDto })
+  @ApiNotFoundResponse({ description: 'Wallet not found' })
+  @Get('/:id')
+  async fetch(
+    @Param('id', ParseUUIDPipe) walletId: string,
+  ): Promise<WalletViewDto> {
+    try {
+      const wallet = await this.walletService.fetchWallet(walletId);
+
+      return plainToInstance(WalletViewDto, wallet, {
+        excludeExtraneousValues: true,
+      });
+    } catch (error) {
       if (error instanceof WalletNotFoundError) {
         throw new NotFoundException(error.message);
       }

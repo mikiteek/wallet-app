@@ -9,7 +9,7 @@ import {
   FundsDepositedWalletMessage,
   FundsWithdrawnWalletMessage,
   FundsTransferredWalletMessage,
-  FundTransferInitiatedWalletMessage,
+  FundsTransferInitiatedWalletMessage,
   FundsTransferFailedWalletMessage,
 } from '../../../rabbitmq/messages';
 
@@ -67,7 +67,7 @@ export class WalletPublisher {
   }
 
   async publishTransferInitiatedMessage(
-    message: FundTransferInitiatedWalletMessage,
+    message: FundsTransferInitiatedWalletMessage,
   ): Promise<void> {
     const builder = RabbitMQMessageBuilder.create(
       MessageType.FUNDS_TRANSFER_INITIATED,

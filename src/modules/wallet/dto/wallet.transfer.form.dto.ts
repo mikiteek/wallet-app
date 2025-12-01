@@ -24,7 +24,7 @@ export class WalletTransferFormDto {
     type: 'number',
     description: 'Amount to transfer in cents',
     minimum: 100,
-    maximum: 10000000,
+    maximum: 100000000,
   })
   @IsInt()
   @Min(100)
