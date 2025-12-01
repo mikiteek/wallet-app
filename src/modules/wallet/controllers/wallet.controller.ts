@@ -18,6 +18,7 @@ import {
   WalletDepositFormDto,
   WalletViewDto,
   WalletWithdrawFormDto,
+  WalletTransferFormDto,
 } from '../dto';
 import {
   ApiConflictResponse,
@@ -109,6 +110,37 @@ export class WalletController {
         excludeExtraneousValues: true,
       });
     } catch (error) {
+      if (error instanceof WalletNotFoundError) {
+        throw new NotFoundException(error.message);
+      }
+
+      throw error;
+    }
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe())
+  @ApiOkResponse({ type: WalletViewDto })
+  @ApiConflictResponse({ description: 'Transaction already exists' })
+  @Post('/:id/transfer')
+  async transfer(
+    @Param('id', ParseUUIDPipe) sourceWalletId: string,
+    @Body() dto: WalletTransferFormDto,
+  ): Promise<WalletViewDto> {
+    try {
+      const wallet = await this.walletService.transfer(sourceWalletId, dto);
+
+      return plainToInstance(WalletViewDto, wallet, {
+        excludeExtraneousValues: true,
+      });
+    } catch (error) {
+      if (
+        error instanceof TransactionAlreadyExistsError ||
+        error instanceof InsufficientFundsError
+      ) {
+        throw new ConflictException(error.message);
+      }
+
       if (error instanceof WalletNotFoundError) {
         throw new NotFoundException(error.message);
       }

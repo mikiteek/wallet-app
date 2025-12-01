@@ -40,9 +40,10 @@ export class WalletRepository {
     });
 
     if (!wallet) {
-      throw new WalletNotFoundError(
+      this.logger.error(
         `Error on fetching wallet with pessimistic_write lock walletId=${walletId}`,
       );
+      throw new WalletNotFoundError(`Wallet is not found walletId=${walletId}`);
     }
 
     return wallet;
@@ -202,6 +203,100 @@ export class WalletRepository {
         amount,
       });
       throw error;
+    }
+  }
+
+  async transfer(
+    sourceWalletId: string,
+    destinationWalletId: string,
+    amount: number,
+    transactionId: string,
+  ): Promise<boolean> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    const entityManager = queryRunner.manager;
+    await queryRunner.connect();
+
+    await queryRunner.startTransaction();
+    try {
+      const sourceWallet = await this.fetchWalletWithLockOrThrow(
+        sourceWalletId,
+        entityManager,
+      );
+      const destinationWallet = await this.fetchWalletWithLockOrThrow(
+        destinationWalletId,
+        entityManager,
+      );
+
+      const sourceBalanceBefore = sourceWallet.balance;
+      const sourceBalanceAfter = sourceBalanceBefore - amount;
+
+      if (sourceBalanceAfter < 0) {
+        throw new InsufficientFundsError(
+          `Insufficient funds for transfer from walletId=${sourceWalletId}, balance=${sourceBalanceBefore}, transferAmount=${amount}`,
+        );
+      }
+
+      const debitOperation = entityManager.create(WalletOperationEntity, {
+        walletId: sourceWalletId,
+        transactionId,
+        entryType: EntryType.DEBIT,
+        amount: -amount,
+        balanceBefore: sourceBalanceBefore,
+        balanceAfter: sourceBalanceAfter,
+      });
+      await entityManager.insert(WalletOperationEntity, debitOperation);
+      await entityManager.decrement(
+        WalletEntity,
+        { id: sourceWalletId },
+        'balance',
+        amount,
+      );
+
+      const destinationBalanceBefore = destinationWallet.balance;
+      const destinationBalanceAfter = destinationBalanceBefore + amount;
+
+      const creditOperation = entityManager.create(WalletOperationEntity, {
+        walletId: destinationWalletId,
+        transactionId,
+        entryType: EntryType.CREDIT,
+        amount: amount,
+        balanceBefore: destinationBalanceBefore,
+        balanceAfter: destinationBalanceAfter,
+      });
+      await entityManager.insert(WalletOperationEntity, creditOperation);
+      await entityManager.increment(
+        WalletEntity,
+        { id: destinationWalletId },
+        'balance',
+        amount,
+      );
+      await this.transactionRepository.updateToCommitted(
+        transactionId,
+        entityManager,
+      );
+
+      await queryRunner.commitTransaction();
+      return true;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      await this.transactionRepository.updateToFailed(
+        transactionId,
+        errorMessage,
+      );
+
+      this.logger.error('Error transferring between wallets', {
+        error: error as unknown,
+        transactionId,
+        sourceWalletId,
+        destinationWalletId,
+        amount,
+      });
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 }

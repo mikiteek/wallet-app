@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { PinoLogger } from 'nestjs-pino';
-import { WalletDepositFormDto } from '../dto';
+import {
+  WalletDepositFormDto,
+  WalletWithdrawFormDto,
+  WalletTransferFormDto,
+} from '../dto';
 import { FetchWalletQuery } from '../queries';
 import {
   DepositWalletCommand,
   CreateWalletCommand,
   WithdrawWalletCommand,
+  TransferWalletCommand,
 } from '../commands';
 import { WalletEntity } from '../entities';
 import { WalletPublisher } from '../publishers/wallet.publisher';
@@ -84,7 +89,7 @@ export class WalletService {
     await this.events.publishFundsDepositedMessage({
       walletId,
       amount,
-      transaction,
+      transactionId,
     });
 
     return await this.fetchWallet(walletId);
@@ -92,7 +97,7 @@ export class WalletService {
 
   async withdrawFunds(
     walletId: string,
-    dto: WalletDepositFormDto,
+    dto: WalletWithdrawFormDto,
   ): Promise<WalletEntity> {
     const { amount, transactionId } = dto;
     const wallet = await this.fetchWallet(walletId);
@@ -127,9 +132,75 @@ export class WalletService {
     await this.events.publishFundsWithdrawnMessage({
       walletId,
       amount,
-      transaction,
+      transactionId,
     });
 
     return await this.fetchWallet(walletId);
+  }
+
+  async transfer(
+    sourceWalletId: string,
+    dto: WalletTransferFormDto,
+  ): Promise<WalletEntity> {
+    const { toWalletId, amount, transactionId } = dto;
+    const sourceWallet = await this.fetchWallet(sourceWalletId);
+    if (sourceWallet.balance < amount) {
+      const errorMessage = `Insufficient funds in wallet ID ${sourceWalletId} for transfer of amount ${amount}`;
+      this.logger.error(errorMessage);
+      throw new InsufficientFundsError(errorMessage);
+    }
+
+    const transaction: Transaction = {
+      id: transactionId,
+      amount,
+      type: TransactionType.TRANSFER,
+      source: sourceWalletId,
+      destination: toWalletId,
+      state: TransactionState.PENDING,
+      description: 'Transfer between wallets',
+      transactedAt: null,
+      errorMessage: null,
+    };
+    const createTransactionCommand = new CreateTransactionCommand(transaction);
+    try {
+      await this.commandBus.execute<CreateTransactionCommand>(
+        createTransactionCommand,
+      );
+      await this.events.publishTransferInitiatedMessage({
+        fromWalletId: sourceWalletId,
+        toWalletId,
+        amount,
+        transactionId,
+      });
+
+      const transferCommand = new TransferWalletCommand(
+        sourceWalletId,
+        toWalletId,
+        amount,
+        transactionId,
+      );
+      await this.commandBus.execute<TransferWalletCommand>(transferCommand);
+      await this.events.publishFundsTransferredMessage({
+        fromWalletId: sourceWalletId,
+        toWalletId,
+        amount,
+        transactionId,
+      });
+
+      return await this.fetchWallet(sourceWalletId);
+    } catch (error) {
+      const errorMessage: string =
+        (error.message as string) ||
+        `Transfer from wallet=${sourceWalletId} to wallet=${toWalletId} failed. Reason is unknown`;
+      await this.events.publishTransferFailedMessage({
+        fromWalletId: sourceWalletId,
+        toWalletId,
+        amount,
+        transactionId,
+        reason: errorMessage,
+      });
+
+      throw error;
+    }
   }
 }

@@ -8,6 +8,9 @@ import {
   WalletCreatedMessage,
   FundsDepositedWalletMessage,
   FundsWithdrawnWalletMessage,
+  FundsTransferredWalletMessage,
+  FundTransferInitiatedWalletMessage,
+  FundsTransferFailedWalletMessage,
 } from '../../../rabbitmq/messages';
 
 const EXCHANGE = 'wallet_events';
@@ -15,6 +18,9 @@ enum RoutingKeys {
   WALLET_CREATED = 'wallet.created',
   WALLET_DEPOSIT = 'wallet.deposit',
   WALLET_WITHDRAW = 'wallet.withdraw',
+  WALLET_TRANSFER = 'wallet.transfer',
+  WALLET_TRANSFER_INITIATED = 'wallet.transfer-initiated',
+  WALLET_TRANSFER_FAILED = 'wallet.transfer-failed',
 }
 
 @Injectable()
@@ -56,6 +62,48 @@ export class WalletPublisher {
 
     await this.publishMessage(
       RoutingKeys.WALLET_WITHDRAW,
+      builder.getMessage(),
+    );
+  }
+
+  async publishTransferInitiatedMessage(
+    message: FundTransferInitiatedWalletMessage,
+  ): Promise<void> {
+    const builder = RabbitMQMessageBuilder.create(
+      MessageType.FUNDS_TRANSFER_INITIATED,
+      message,
+    );
+
+    await this.publishMessage(
+      RoutingKeys.WALLET_TRANSFER_INITIATED,
+      builder.getMessage(),
+    );
+  }
+
+  async publishTransferFailedMessage(
+    message: FundsTransferFailedWalletMessage,
+  ): Promise<void> {
+    const builder = RabbitMQMessageBuilder.create(
+      MessageType.FUNDS_TRANSFER_FAILED,
+      message,
+    );
+
+    await this.publishMessage(
+      RoutingKeys.WALLET_TRANSFER_FAILED,
+      builder.getMessage(),
+    );
+  }
+
+  async publishFundsTransferredMessage(
+    message: FundsTransferredWalletMessage,
+  ): Promise<void> {
+    const builder = RabbitMQMessageBuilder.create(
+      MessageType.FUNDS_TRANSFERRED,
+      message,
+    );
+
+    await this.publishMessage(
+      RoutingKeys.WALLET_TRANSFER,
       builder.getMessage(),
     );
   }
