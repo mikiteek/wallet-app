@@ -183,7 +183,7 @@ export class WalletService {
       return await this.fetchWallet(sourceWalletId);
     } catch (error) {
       const errorMessage: string =
-        (error.message as string) ||
+        (error?.message as string) ||
         `Transfer from wallet=${sourceWalletId} to wallet=${toWalletId} failed. Reason is unknown`;
       await this.events.publishTransferFailedMessage({
         fromWalletId: sourceWalletId,

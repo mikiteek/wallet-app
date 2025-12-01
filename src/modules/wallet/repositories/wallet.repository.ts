@@ -203,6 +203,8 @@ export class WalletRepository {
         amount,
       });
       throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 
