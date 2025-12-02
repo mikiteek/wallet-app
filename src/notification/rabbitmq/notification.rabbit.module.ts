@@ -17,11 +17,27 @@ import type { RabbitMQConfig } from '../../config/rabbitmq/rabbitmq.config';
 
         return {
           uri: `amqp://${user}:${password}@${host}:${port}`, // amqp://guest:guest@localhost:5672
+          exchanges: [
+            {
+              name: 'wallet_events',
+              type: 'topic',
+            },
+          ],
           queues: [
             {
               name: 'wallet-events-queue',
               exchange: 'wallet_events',
               routingKey: 'wallet.#', // wallet.created, wallet.deposit,
+              options: {
+                durable: true,
+                deadLetterExchange: 'wallet_events_dead_letter',
+                deadLetterRoutingKey: 'wallet.dead_letter',
+              },
+            },
+            {
+              name: 'wallet-events-dead-letter-queue',
+              exchange: 'wallet_events_dead_letter',
+              routingKey: 'wallet.dead_letter',
               options: {
                 durable: true,
               },

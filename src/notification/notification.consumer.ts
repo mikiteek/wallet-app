@@ -4,7 +4,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { NotificationService } from './notification.service';
 import { NotificationType } from './notification.entity';
 import type { RabbitMQMessage } from '../rabbitmq/messages';
-import { NotificationAlreadyExistError } from './errors';
+import { NotificationAlreadyExistsError } from './errors';
 
 @Injectable()
 export class NotificationConsumer {
@@ -34,10 +34,12 @@ export class NotificationConsumer {
       );
       await this.notificationService.sendEmail(title, text);
     } catch (error) {
-      if (error instanceof NotificationAlreadyExistError) {
+      if (error instanceof NotificationAlreadyExistsError) {
         this.logger.warn(
           `Notification already exists for messageId=${messageId}, skipping email sending.`,
         );
+
+        return;
       }
 
       throw error;

@@ -1,1 +1,1 @@
-export * from './NotificationAlreadyExistError';
+export * from './NotificationAlreadyExistsError';

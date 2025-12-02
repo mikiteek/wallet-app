@@ -1,4 +1,4 @@
-export class NotificationAlreadyExistError extends Error {
+export class NotificationAlreadyExistsError extends Error {
   constructor(message: string = 'Notification already exists') {
     super(message);
   }

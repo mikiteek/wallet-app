@@ -30,6 +30,8 @@ export class MailService {
     } catch (error) {
       this.logger.error('Error sending email');
       this.logger.error(error);
+
+      throw error;
     }
   }
 }

@@ -5,7 +5,7 @@ import { NotificationRepository } from './notification.repository';
 import { Notification } from './notification';
 import { NotificationType } from './notification.entity';
 
-// we do not have authentification
+// we do not have authentication
 // mock recipient email
 const TO_EMAIL = 'example@email.com';
 

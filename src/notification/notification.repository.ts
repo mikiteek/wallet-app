@@ -5,7 +5,7 @@ import { PinoLogger } from 'nestjs-pino';
 import { NotificationEntity } from './notification.entity';
 import { Notification } from './notification';
 import { PostgresErrCodes } from '../common/constants';
-import { NotificationAlreadyExistError } from './errors';
+import { NotificationAlreadyExistsError } from './errors';
 
 @Injectable()
 export class NotificationRepository {
@@ -30,7 +30,7 @@ export class NotificationRepository {
         const errorMessage = `Notification already exists notificationId=${notification.id}`;
         this.logger.warn(errorMessage);
 
-        throw new NotificationAlreadyExistError(errorMessage);
+        throw new NotificationAlreadyExistsError(errorMessage);
       }
 
       throw error;

@@ -33,14 +33,14 @@ export class NotificationEntity {
     type: 'text',
     nullable: true,
   })
-  message: string;
+  message: string | null;
 
   @Column({
     name: 'email_address',
     type: 'text',
     nullable: true,
   })
-  emailAddress: string;
+  emailAddress: string | null;
 
   @CreateDateColumn({
     name: 'created_at',
