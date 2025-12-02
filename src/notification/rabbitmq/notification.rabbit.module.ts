@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { RabbitMQModule as RabbitMQUpModule } from '@golevelup/nestjs-rabbitmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import type { RabbitMQConfig } from '../config/rabbitmq/rabbitmq.config';
+import type { RabbitMQConfig } from '../../config/rabbitmq/rabbitmq.config';
 
 @Module({
   imports: [
@@ -23,10 +23,20 @@ import type { RabbitMQConfig } from '../config/rabbitmq/rabbitmq.config';
               type: 'topic',
             },
           ],
+          queues: [
+            {
+              name: 'wallet-events-queue',
+              exchange: 'wallet_events',
+              routingKey: 'wallet.#', // wallet.created, wallet.deposit,
+              options: {
+                durable: true,
+              },
+            },
+          ],
         };
       },
     }),
   ],
   exports: [RabbitMQUpModule],
 })
-export class RabbitMQModule {}
+export class NotificationRabbitModule {}
