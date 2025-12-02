@@ -3,7 +3,7 @@
 ## 1. System Overview
 - **Wallet Service**: NestJS HTTP API (`src/main.ts`) exposing wallet operations; runs with global exception filtering for consistent error envelopes.
 - **Notification Service**: NestJS context app (`src/notification.main.ts`) consuming async events and dispatching emails.
-- **Dependencies**: PostgreSQL for persistence, RabbitMQ for event-driven workflows, Maildev for local email testing.
+- **Dependencies**: PostgreSQL for persistence, RabbitMQ for event-driven workflows, Maildev for local email testing, TypeORM as ORM layer.
 
 ## 2. Service Boundaries & Rationale
 - **Separated processes** (wallet vs notification) keep synchronous business logic isolated from notification side-effects, improving scalability and fault isolation at the cost of additional operational overhead.
@@ -12,8 +12,6 @@
 ## 3. Data & Messaging
 - **PostgreSQL** selected for transactional guarantees and SQL richness; requires migration discipline but suits financial-domain consistency needs.
 - **RabbitMQ events** decouple notification latency from user-facing flows and enable retries/dlq strategies, though they introduce eventual consistency and infrastructure complexity.
-targeted stacks: prod profile spins up full infra; test profile provisions isolated DB/RabbitMQ for e2e runs.
-to gate dependent service startup; keeps boot order deterministic yet adds waiting time during local dev.
 
 ## 4. Architecture & Domain Patterns
 - **Layered + Modular Monolith** within NestJS: configuration/logging/database modules remain reusable while feature areas (wallet, ledger, transaction, notification) encapsulate their own entities and repositories.
@@ -41,7 +39,3 @@ to gate dependent service startup; keeps boot order deterministic yet adds waiti
 - **Message Handling**: RabbitMQ ACK/NACK semantics (managed by notification-service) ensure notifications are eventually delivered. However, event processing is asynchronous, so external observers may see notification lag relative to wallet mutations.
 - **Ordering Guarantees**: Within a single wallet, ledger entries inherit DB transaction order; across wallets, eventual consistency applies once events leave the service boundary.
 
-## 7. Automated Database Migrations & Seeding
-- **docker-compose orchestration**: one `wallet-migrations` container (tagged for both `prod` and `test` profiles) waits for Postgres health, runs `npm run migration:run`, and optionally executes seeds. Sharing the runner avoids duplicate work while keeping schema prep consistent for API, notification, and e2e flows.
-- **Migration Strategy**: `src/migrations` contains TypeORM migration files; `npm run migration:generate` and `npm run migration:revert` facilitate iterative development. Test profile uses `test/fixtures` seeding for fast, repeatable setups.
-- **Separation of Concerns**: Migration logic (e.g., adding columns) remains distinct from business logic, preventing accidental data manipulations. Read models and event handlers should not have side-effects that alter schema or data outside their scope.

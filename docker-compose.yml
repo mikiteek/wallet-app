@@ -94,7 +94,6 @@ services:
     restart: "no"
     profiles:
       - prod
-      - test
 
   wallet-service:
     build:
