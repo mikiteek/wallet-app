@@ -1,4 +1,4 @@
-## Run the application locally with all the necessary containerized services including:
+## Run the application or tests locally with all the necessary containerized services including:
  - wallet-service (our application)
  - rabbitmq (message broker)
  - postgres (database)
@@ -10,8 +10,11 @@
  - Docker and Docker Compose installed
  - Make sure you are in the project root folder in terminal
 ```bash
-
+### Run application in docker containers
 $ docker-compose --profile prod up -d
+
+### Run e2e tests in docker containers and see the logs in the terminal
+$ docker-compose --profile test up --abort-on-container-exit wallet-service-e2e
 ```
 The flag `--profile prod` is used to run only the necessary services for running app.
 
