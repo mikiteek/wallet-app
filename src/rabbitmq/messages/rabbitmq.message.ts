@@ -9,21 +9,30 @@ export enum MessageType {
 
 export type RabbitMQMessage<T> = {
   type: MessageType;
+  messageId: string;
   data: T;
 };
 
 export class RabbitMQMessageBuilder<T> {
-  private readonly message: RabbitMQMessage<T>;
-
-  constructor(type: MessageType, data: T) {
-    this.message = { type, data };
-  }
+  constructor(
+    private readonly type: MessageType,
+    private readonly data: T,
+    private readonly messageId: string = crypto.randomUUID(),
+  ) {}
 
   getMessage(): RabbitMQMessage<T> {
-    return this.message;
+    return {
+      type: this.type,
+      messageId: this.messageId,
+      data: this.data,
+    };
   }
 
-  static create<U>(type: MessageType, data: U): RabbitMQMessageBuilder<U> {
-    return new RabbitMQMessageBuilder(type, data);
+  static create<U>(
+    type: MessageType,
+    data: U,
+    messageId = crypto.randomUUID(),
+  ): RabbitMQMessageBuilder<U> {
+    return new RabbitMQMessageBuilder(type, data, messageId);
   }
 }
