@@ -105,11 +105,11 @@ services:
     env_file:
       - .env
     environment:
-#      - DB_HOST=db
+      - DB_HOST=db
       - RABBITMQ_HOST=rabbitmq
     depends_on:
-#      db:
-#        condition: service_healthy
+      db:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     restart: unless-stopped
@@ -135,3 +135,11 @@ services:
         condition: service_healthy
     profiles:
       - test
+
+  maildev:
+    image: maildev/maildev
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    profiles:
+      - prod

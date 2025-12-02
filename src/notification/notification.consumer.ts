@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { RabbitSubscribe } from '@golevelup/nestjs-rabbitmq';
 import { PinoLogger } from 'nestjs-pino';
 import { NotificationService } from './notification.service';
+import { NotificationType } from './notification.entity';
 import type { RabbitMQMessage } from '../rabbitmq/messages';
+import { NotificationAlreadyExistError } from './errors';
 
 @Injectable()
 export class NotificationConsumer {
@@ -16,10 +18,29 @@ export class NotificationConsumer {
     routingKey: 'wallet.#',
     queue: 'wallet-events-queue',
   })
-  handleWalletEvent<T>(message: RabbitMQMessage<T>) {
-    this.logger.info('Handling message notification %o:', message);
+  async handleWalletEvent<T>(message: RabbitMQMessage<T>) {
+    const { messageId, type: messageType } = message;
 
-    const email = `Notification for event type: ${message.type}`;
-    this.notificationService.sendEmail(email);
+    // Mock some notification content
+    // In reality, we customize title and text based on message content
+    const title = `Event ${messageType}`;
+    const text = `Be informed about event with your wallet ${messageType}`;
+    try {
+      await this.notificationService.persistNotification(
+        messageId,
+        NotificationType.EMAIL,
+        title,
+        text,
+      );
+      await this.notificationService.sendEmail(title, text);
+    } catch (error) {
+      if (error instanceof NotificationAlreadyExistError) {
+        this.logger.warn(
+          `Notification already exists for messageId=${messageId}, skipping email sending.`,
+        );
+      }
+
+      throw error;
+    }
   }
 }
