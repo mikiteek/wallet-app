@@ -23,16 +23,6 @@ import type { RabbitMQConfig } from '../config/rabbitmq/rabbitmq.config';
               type: 'topic',
             },
           ],
-          // queues: [
-          //   {
-          //     name: 'wallet-events-queue',
-          //     exchange: 'wallet_events',
-          //     routingKey: 'wallet.#', // wallet.created, wallet.deposit,
-          //     options: {
-          //       durable: true,
-          //     },
-          //   },
-          // ],
         };
       },
     }),
