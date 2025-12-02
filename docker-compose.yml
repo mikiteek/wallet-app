@@ -77,6 +77,25 @@ services:
     profiles:
       - test
 
+  wallet-migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    command: >
+      sh -c "npm run migrations:run"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+    profiles:
+      - prod
+      - test
+
   wallet-service:
     build:
       context: .
@@ -94,6 +113,8 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      wallet-migrations:
+        condition: service_completed_successfully
     restart: unless-stopped
     profiles:
       - prod
@@ -137,6 +158,8 @@ services:
         condition: service_healthy
       rabbitmq-test:
         condition: service_healthy
+      wallet-migrations:
+        condition: service_completed_successfully
     profiles:
       - test
 
