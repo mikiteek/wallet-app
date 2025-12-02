@@ -30,16 +30,6 @@ import type { RabbitMQConfig } from '../../config/rabbitmq/rabbitmq.config';
               routingKey: 'wallet.#', // wallet.created, wallet.deposit,
               options: {
                 durable: true,
-                deadLetterExchange: 'wallet_events_dead_letter',
-                deadLetterRoutingKey: 'wallet.dead_letter',
-              },
-            },
-            {
-              name: 'wallet-events-dead-letter-queue',
-              exchange: 'wallet_events_dead_letter',
-              routingKey: 'wallet.dead_letter',
-              options: {
-                durable: true,
               },
             },
           ],

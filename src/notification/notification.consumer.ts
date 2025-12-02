@@ -38,11 +38,9 @@ export class NotificationConsumer {
         this.logger.warn(
           `Notification already exists for messageId=${messageId}, skipping email sending.`,
         );
-
-        return;
       }
 
-      throw error;
+      this.logger.error(error);
     }
   }
 }
