@@ -16,7 +16,7 @@ $ docker-compose --profile prod up -d
 ### Run e2e tests in docker containers and see the logs in the terminal
 $ docker-compose --profile test up --abort-on-container-exit wallet-service-e2e
 ```
-The flag `--profile prod` is used to run only the necessary services for running app.
+The flags `--profile prod`, `--profile test` are used to run only the necessary services for running app or e2e tests.
 
 The application will be running at `http://localhost:3000/`
 
@@ -172,7 +172,7 @@ Retrieves the current state of a wallet.
 **Notes:**
 - All amounts are in cents (e.g., 5000 = $50.00)
 - Minimum amount: 100 cents ($1.00)
-- Maximum amount: 10,000,000 cents ($100,000.00)
+- Maximum amount: 100,000,000 cents ($100,000,0)
 - All monetary values are integers
 - Entry types: `debit` (money out) or `credit` (money in)
 

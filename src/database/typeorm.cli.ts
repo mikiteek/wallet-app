@@ -1,8 +1,5 @@
 import { DataSource } from 'typeorm';
 import { resolve } from 'path';
-console.log('Loading TypeORM configuration from typeorm.cli.ts');
-console.log('process.env.DB_NAME - ', process.env.DB_NAME);
-console.log('process.env - ', process.env);
 
 const dataSource = new DataSource({
   type: 'postgres',

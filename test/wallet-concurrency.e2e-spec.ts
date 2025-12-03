@@ -21,18 +21,6 @@ describe('Wallet Concurrency (e2e)', () => {
     await app.init();
 
     dataSource = moduleFixture.get<DataSource>(DataSource);
-
-    let retries = 5;
-    while (retries > 0) {
-      try {
-        await dataSource.query('SELECT 1');
-        break;
-      } catch (error) {
-        retries--;
-        if (retries === 0) throw error;
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }
   });
 
   beforeEach(async () => {
