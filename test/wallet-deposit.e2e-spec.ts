@@ -24,6 +24,7 @@ describe('Wallet Deposit (e2e)', () => {
   });
 
   beforeEach(async () => {
+    await dataSource.query('TRUNCATE TABLE wallets.notifications CASCADE');
     await dataSource.query('TRUNCATE TABLE wallets.wallet_operations CASCADE');
     await dataSource.query('TRUNCATE TABLE wallets.transactions CASCADE');
     await dataSource.query('TRUNCATE TABLE wallets.wallets CASCADE');
