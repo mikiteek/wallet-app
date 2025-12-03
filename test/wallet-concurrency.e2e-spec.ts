@@ -30,7 +30,7 @@ describe('Wallet Concurrency (e2e)', () => {
       } catch (error) {
         retries--;
         if (retries === 0) throw error;
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
   });
@@ -156,7 +156,7 @@ describe('Wallet Concurrency (e2e)', () => {
         ),
       );
 
-      responses.forEach(response => {
+      responses.forEach((response) => {
         expect(response.status).toBe(200);
       });
 
@@ -210,10 +210,10 @@ describe('Wallet Concurrency (e2e)', () => {
       ]);
 
       const successCount = [withdrawResponse, transferResponse].filter(
-        r => r.status === 200,
+        (r) => r.status === 200,
       ).length;
       const failureCount = [withdrawResponse, transferResponse].filter(
-        r => r.status === 409,
+        (r) => r.status === 409,
       ).length;
 
       expect(successCount).toBe(1);
@@ -267,8 +267,8 @@ describe('Wallet Concurrency (e2e)', () => {
         ),
       );
 
-      const successCount = responses.filter(r => r.status === 200).length;
-      const failureCount = responses.filter(r => r.status === 409).length;
+      const successCount = responses.filter((r) => r.status === 200).length;
+      const failureCount = responses.filter((r) => r.status === 409).length;
 
       expect(successCount).toBe(1);
       expect(failureCount).toBe(1);
@@ -295,15 +295,15 @@ describe('Wallet Concurrency (e2e)', () => {
       }));
 
       const responses = await Promise.all(
-        withdraws.map(dto =>
+        withdraws.map((dto) =>
           request(app.getHttpServer())
             .post(`/wallet/${walletId}/withdraw`)
             .send(dto),
         ),
       );
 
-      const successCount = responses.filter(r => r.status === 200).length;
-      const failureCount = responses.filter(r => r.status === 409).length;
+      const successCount = responses.filter((r) => r.status === 200).length;
+      const failureCount = responses.filter((r) => r.status === 409).length;
 
       expect(successCount).toBeLessThanOrEqual(3);
       expect(failureCount).toBeGreaterThanOrEqual(2);

@@ -32,12 +32,12 @@ describe('Wallet Transfer (e2e)', () => {
 
     sourceWalletId = randomUUID();
     destinationWalletId = randomUUID();
-    
+
     await dataSource.query(
       `INSERT INTO wallets.wallets (id, balance) VALUES ($1, $2)`,
       [sourceWalletId, '50000'],
     );
-    
+
     await dataSource.query(
       `INSERT INTO wallets.wallets (id, balance) VALUES ($1, $2)`,
       [destinationWalletId, '10000'],

@@ -133,7 +133,7 @@ describe('Wallet History (e2e)', () => {
         .expect(200);
 
       expect(response.body.items).toHaveLength(2);
-      
+
       expect(response.body.items[1]).toEqual(
         expect.objectContaining({
           transactionId: depositDto.transactionId,
@@ -141,7 +141,7 @@ describe('Wallet History (e2e)', () => {
           amount: 10000,
         }),
       );
-      
+
       expect(response.body.items[0]).toEqual(
         expect.objectContaining({
           transactionId: withdrawDto.transactionId,

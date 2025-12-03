@@ -20,7 +20,7 @@ describe('Wallet Fetch (e2e)', () => {
     await app.init();
 
     dataSource = moduleFixture.get<DataSource>(DataSource);
-    
+
     let retries = 5;
     while (retries > 0) {
       try {
@@ -29,7 +29,7 @@ describe('Wallet Fetch (e2e)', () => {
       } catch (error) {
         retries--;
         if (retries === 0) throw error;
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
   });
