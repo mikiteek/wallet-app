@@ -39,3 +39,10 @@
 - **Message Handling**: RabbitMQ ACK/NACK semantics (managed by notification-service) ensure notifications are eventually delivered. However, event processing is asynchronous, so external observers may see notification lag relative to wallet mutations.
 - **Ordering Guarantees**: Within a single wallet, ledger entries inherit DB transaction order; across wallets, eventual consistency applies once events leave the service boundary.
 
+## 7. Tech Debt & Future Improvements
+- **Notification Retry & DLQ**: Implement retry policies and dead-letter queues in RabbitMQ to handle transient failures in email dispatching.
+- **Notification-service database**: In real world we would implement notification-service in a separate repository and have its own database for better separation of concerns and scalability.
+- **Running scripts env**: Use separate docker-compose files for running application and running tests for decoupling environments.
+- **Tests** Add tests for notification-service.
+
+
