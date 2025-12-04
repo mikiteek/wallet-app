@@ -9,6 +9,8 @@
  Preconditions:
  - Docker and Docker Compose installed
  - Make sure you are in the project root folder in terminal
+ - Create a `.env` file based on the `.env.example` in the root of project file and adjust values if needed. You can just copy values from `.env.example` for running locally purposes.
+
 ```bash
 ### Run application in docker containers
 $ docker-compose --profile prod up -d
