@@ -16,26 +16,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    profiles:
-      - prod
-
-  db-test:
-    image: postgres
-    restart: always
-    shm_size: 128mb
-    ports:
-      - "5433:5432"
-    environment:
-      - POSTGRES_PASSWORD=test_password
-      - POSTGRES_USER=test_user
-      - POSTGRES_DB=wallet_test
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U test_user -d wallet_test" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    profiles:
-      - test
 
   rabbitmq:
     image: rabbitmq:4-management
@@ -53,25 +33,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    profiles:
-      - prod
-
-  rabbitmq-test:
-    image: rabbitmq:4-management
-    hostname: server-test
-    ports:
-      - "5673:5672"
-      - "15673:15672"
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    profiles:
-      - test
 
   wallet-migrations:
     build:
@@ -88,26 +49,6 @@ services:
       db:
         condition: service_healthy
     restart: "no"
-    profiles:
-      - prod
-
-  wallet-migrations-test:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    command: >
-      sh -c "npm run migrations:run"
-    env_file:
-      - .env.test
-    environment:
-      - DB_HOST=db-test
-    depends_on:
-      db-test:
-        condition: service_healthy
-    restart: "no"
-    profiles:
-      - test
 
   wallet-service:
     build:
@@ -129,8 +70,6 @@ services:
       wallet-migrations:
         condition: service_completed_successfully
     restart: unless-stopped
-    profiles:
-      - prod
 
   notification-service:
     build:
@@ -151,31 +90,6 @@ services:
       maildev:
         condition: service_healthy
     restart: unless-stopped
-    profiles:
-      - prod
-
-
-  wallet-service-e2e:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    command: npm run test:e2e
-    env_file:
-      - .env.test
-    environment:
-      - DB_HOST=db-test
-      - RABBITMQ_HOST=rabbitmq-test
-    depends_on:
-      db-test:
-        condition: service_healthy
-      rabbitmq-test:
-        condition: service_healthy
-      wallet-migrations-test:
-        condition: service_completed_successfully
-    restart: "no"
-    profiles:
-      - test
 
   maildev:
     image: maildev/maildev
@@ -187,8 +101,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    profiles:
-      - prod
 
 volumes:
   rabbitmq_data:
