@@ -19,11 +19,16 @@ $ docker-compose up -d
 $ docker-compose -f docker-compose.test.yml up --abort-on-container-exit wallet-service-e2e
 
 ### If you changed anything and want to rebuild the containers you should:
-# - remove the existing containers first
+# - remove the existing containers first (use the appropriate compose file)
+# For the main application:
 $ docker-compose down -v --remove-orphans
-
-# - build containers without cache
+# For the test containers:
+$ docker-compose -f docker-compose.test.yml down -v --remove-orphans
+# - build containers without cache (use the appropriate compose file)
+# For the main application:
 $ docker-compose build --no-cache
+# For the test containers:
+$ docker-compose -f docker-compose.test.yml build --no-cache
 ```
 A separate docker-compose.test.yml file is provided for running e2e tests in isolation. So use the flag `-f docker-compose.test.yml` to run the tests, remove or rebuild the test containers.
 
